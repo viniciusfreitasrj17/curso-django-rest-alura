@@ -1,5 +1,7 @@
 from typing import List
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import generics, response, status, viewsets
 
 from .models import Course, Matriculation, Student
@@ -23,6 +25,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """CRUD courses"""
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    http_method_names: List[str] = ['get', 'post', 'put', 'patch']
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -41,6 +44,10 @@ class MatriculationViewSet(viewsets.ModelViewSet):
     serializer_class = MatriculationSerializer
     http_method_names: List[str] = ['get', 'post',
                                     'put', 'patch']  # exclude method delete
+
+    @method_decorator(cache_page(20))  # cache for 20 seconds
+    def dispatch(self, *args, **kwargs):
+        return super(MatriculationViewSet, self).dispatch(*args, **kwargs)
 
 
 class ListMatriculationStudent(generics.ListAPIView):

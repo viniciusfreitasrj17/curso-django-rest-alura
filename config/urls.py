@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import routers
 from school.views import (
     StudentViewSet,
@@ -31,10 +33,14 @@ router.register('matriculations', MatriculationViewSet,
                 basename='Matriculations')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # trap
+    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    # change route, security
+    path('administrator/', admin.site.urls),
+
     path('', include(router.urls)),
     path('students/<int:pk>/matriculations/',
          ListMatriculationStudent.as_view()),
     path('courses/<int:pk>/matriculations/',
          ListMatriculationCourse.as_view()),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
